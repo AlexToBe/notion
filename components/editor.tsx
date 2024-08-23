@@ -1,0 +1,55 @@
+import React from 'react'
+import { boolean } from 'zod';
+
+import { PartialBlock } from '@blocknote/core'
+import "@blocknote/core/fonts/inter.css";
+import {
+  useCreateBlockNote
+} from '@blocknote/react'
+import { BlockNoteView } from "@blocknote/mantine";
+import '@blocknote/core/style.css'
+import { useTheme } from 'next-themes';
+import {useEdgeStore} from'@/lib/edgestore'
+
+interface EditorProps{
+    initialContent?: string
+    onChange: (value: string) => void;
+    editable?:boolean
+}
+
+
+const Editor = ({
+ 
+    initialContent,
+    onChange,
+    editable 
+}:EditorProps) => {
+  const { resolvedTheme } = useTheme()
+  const { edgestore } = useEdgeStore()
+
+  const uploadFile = async (file: File) => {
+    const response = await edgestore.publicFiles.upload({file})
+    return response.url
+  }
+
+
+  const editor = useCreateBlockNote({
+      initialContent: initialContent ? JSON.parse(initialContent) as PartialBlock[] : undefined,
+      uploadFile: uploadFile
+    })
+     
+    
+  return (
+    <div>
+          <BlockNoteView
+            editor={editor}
+            theme={resolvedTheme === 'dark' ? 'dark' : "light"}
+            editable={editable}
+            onChange={()=>onChange(JSON.stringify(  editor.document,null,2) )}
+          />
+    </div>
+  )
+}
+
+export default Editor
+
